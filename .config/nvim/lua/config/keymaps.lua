@@ -11,3 +11,7 @@ mapKey('<C-l>', '<C-w>l') -- Right
 
 -- clear search highlights 
 mapKey('<leader>h', ':nohlsearch<CR>')
+
+-- indent 
+mapKey('<', '<gv', 'v')
+mapKey('>', '>gv', 'v')
