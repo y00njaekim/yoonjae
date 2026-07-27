@@ -8,8 +8,15 @@ return {
     dependencies = {
       { "mason-org/mason.nvim", opts = {} },
       "neovim/nvim-lspconfig",
+      "hrsh7th/cmp-nvim-lsp",
     },
     config = function(_, opts)
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+      vim.lsp.config("*", {
+        capabilities = capabilities,
+      })
+
       require("mason-lspconfig").setup(opts)
 
       local group = vim.api.nvim_create_augroup("user_lsp_keymaps", { clear = true })
