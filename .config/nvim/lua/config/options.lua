@@ -21,6 +21,7 @@ opt.signcolumn = "yes"
 
 -- etc
 opt.encoding = "UTF-8"
+opt.clipboard = "unnamedplus"
 opt.cmdheight = 1
 opt.scrolloff = 10
 opt.mouse:append("a")
