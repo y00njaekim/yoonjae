@@ -9,6 +9,7 @@ return {
         "stylua",
         "ruff",
         "prettierd",
+        "debugpy",
       },
       run_on_start = true,
       start_delay = 1000,
