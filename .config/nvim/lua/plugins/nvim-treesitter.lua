@@ -17,7 +17,14 @@ return {
         group = group,
         pattern = { "lua", "python" },
         callback = function(args)
-          pcall(vim.treesitter.start, args.buf)
+          local started = pcall(vim.treesitter.start, args.buf)
+
+          if started then
+            for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+              vim.wo[win].foldmethod = "expr"
+              vim.wo[win].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+            end
+          end
         end,
       })
     end,

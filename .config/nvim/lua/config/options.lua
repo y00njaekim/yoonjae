@@ -18,6 +18,12 @@ opt.number = true
 opt.relativenumber = true
 opt.termguicolors = true
 opt.signcolumn = "yes"
+opt.foldcolumn = "0"
+opt.foldmethod = "indent"
+opt.foldlevel = 99
+opt.foldlevelstart = 99
+opt.foldenable = true
+opt.completeopt = { "menu", "menuone", "noselect", "popup" }
 
 -- etc
 opt.encoding = "UTF-8"
