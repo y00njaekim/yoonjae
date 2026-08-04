@@ -59,6 +59,12 @@ return {
               return vim.bo[buf].buflisted and vim.api.nvim_buf_get_name(buf) ~= ""
             end, vim.api.nvim_list_bufs())
 
+            -- 이미 alpha 면 재진입 금지 — startup 에 alpha 가 초기 [No Name] 버퍼를
+            -- 지우면서 이 autocmd 를 깨우고, 재시작하면 빈 버퍼만 남는다
+            if vim.bo.filetype == "alpha" then
+              return
+            end
+
             -- 보조 창이 떠 있으면 레이아웃 유지
             if #remaining > 0 or #vim.api.nvim_tabpage_list_wins(0) > 1 then
               return
