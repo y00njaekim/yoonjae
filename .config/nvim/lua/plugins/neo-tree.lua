@@ -9,6 +9,15 @@ return {
     },
     lazy = false, -- neo-tree will lazily load itself
     opts = {
+      filesystem = {
+        window = {
+          mappings = {
+            ["/"] = "noop", -- fuzzy_finder 해제 → vim 기본 검색
+            ["?"] = "noop", -- 역방향 검색도 vim 기본으로
+            ["f"] = "fuzzy_sorter", -- 기본 "#" 에 걸려있던 fzy 정렬 필터
+          },
+        },
+      },
       window = {
         mappings = {
           ["l"] = "open",
