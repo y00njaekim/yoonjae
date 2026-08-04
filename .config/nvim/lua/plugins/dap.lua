@@ -87,12 +87,9 @@ return {
       dap.listeners.before.launch.dapui_config = function()
         dapui.open()
       end
-      dap.listeners.before.event_terminated.dapui_config = function()
-        dapui.close()
-      end
-      dap.listeners.before.event_exited.dapui_config = function()
-        dapui.close()
-      end
+      -- Nothing closes the UI on event_terminated/event_exited: the console buffer holds the
+      -- debuggee's last output, which is what you want to read when a session dies on startup.
+      -- Close it yourself with <leader>du.
 
       vim.fn.sign_define("DapBreakpoint", {
         text = "●",
