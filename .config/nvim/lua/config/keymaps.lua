@@ -3,6 +3,9 @@ local mapKey = require("utils.keyMapper").mapKey
 -- Neotree toggle
 mapKey('<leader>e', ':Neotree toggle<CR>')
 
+-- alpha dashboard
+mapKey('<leader>a', ':Alpha<CR>')
+
 -- pane navigation 
 mapKey('<C-h>', '<C-w>h') -- Left
 mapKey('<C-j>', '<C-w>j') -- Down

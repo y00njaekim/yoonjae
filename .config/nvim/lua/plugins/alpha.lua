@@ -49,6 +49,24 @@ return {
       }
 
       alpha.setup(dashboard.config)
+
+      -- BufDelete 시점엔 닫히는 버퍼가 아직 목록에 남아 있어 schedule 로 미룬다
+      vim.api.nvim_create_autocmd("BufDelete", {
+        group = vim.api.nvim_create_augroup("alpha_on_last_buf_delete", { clear = true }),
+        callback = function()
+          vim.schedule(function()
+            local remaining = vim.tbl_filter(function(buf)
+              return vim.bo[buf].buflisted and vim.api.nvim_buf_get_name(buf) ~= ""
+            end, vim.api.nvim_list_bufs())
+
+            -- 보조 창이 떠 있으면 레이아웃 유지
+            if #remaining > 0 or #vim.api.nvim_tabpage_list_wins(0) > 1 then
+              return
+            end
+            vim.cmd("Alpha")
+          end)
+        end,
+      })
     end,
   },
 }
