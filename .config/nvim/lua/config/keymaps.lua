@@ -38,8 +38,11 @@ mapKey('<leader>yl', function()
 		return
 	end
 
-	local start_line = vim.fn.line("'<")
-	local end_line = vim.fn.line("'>")
+	local start_line = vim.fn.line('v')
+	local end_line = vim.fn.line('.')
+	if start_line > end_line then
+		start_line, end_line = end_line, start_line
+	end
 	local location = string.format('%s:%d-%d', filepath, start_line, end_line)
 	vim.fn.setreg('+', location)
 	vim.notify('Copied: ' .. location)
