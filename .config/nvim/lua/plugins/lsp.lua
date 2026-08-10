@@ -2,14 +2,24 @@ return {
   {
     "mason-org/mason-lspconfig.nvim",
     opts = {
-      ensure_installed = { "lua_ls", "pyright" },
-      automatic_enable = { "lua_ls", "pyright" },
+      ensure_installed = { "jsonls", "lua_ls", "pyright" },
+      automatic_enable = { "jsonls", "lua_ls", "pyright" },
     },
     dependencies = {
       { "mason-org/mason.nvim", opts = {} },
+      "b0o/schemastore.nvim",
       "neovim/nvim-lspconfig",
     },
     config = function(_, opts)
+      vim.lsp.config("jsonls", {
+        settings = {
+          json = {
+            schemas = require("schemastore").json.schemas(),
+            validate = { enable = true },
+          },
+        },
+      })
+
       require("mason-lspconfig").setup(opts)
 
       local group = vim.api.nvim_create_augroup("user_lsp_keymaps", { clear = true })

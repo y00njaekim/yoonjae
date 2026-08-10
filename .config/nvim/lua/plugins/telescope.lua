@@ -5,6 +5,7 @@ return {
     dependencies = {
         'nvim-lua/plenary.nvim',
         'nvim-telescope/telescope-ui-select.nvim',
+        'nvim-telescope/telescope-live-grep-args.nvim',
     },
     config = function()
         local telescope = require("telescope")
@@ -15,10 +16,11 @@ return {
             },
         })
         telescope.load_extension("ui-select")
+        telescope.load_extension("live_grep_args")
 
         local builtin = require("telescope.builtin")
         mapKey('<leader>ff', builtin.find_files)
-        mapKey('<leader>fg', builtin.live_grep)
+        mapKey('<leader>fg', telescope.extensions.live_grep_args.live_grep_args)
         mapKey('<leader>fb', builtin.buffers)
         mapKey('<leader>fh', builtin.help_tags) 
         mapKey('grr', builtin.lsp_references)

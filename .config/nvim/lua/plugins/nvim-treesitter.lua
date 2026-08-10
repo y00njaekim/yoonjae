@@ -9,13 +9,13 @@ return {
     config = function()
       local treesitter = require("nvim-treesitter")
 
-      treesitter.install({ "python" })
+      treesitter.install({ "json", "python" })
 
       local group = vim.api.nvim_create_augroup("user-treesitter", { clear = true })
 
       vim.api.nvim_create_autocmd("FileType", {
         group = group,
-        pattern = { "lua", "python" },
+        pattern = { "json", "jsonc", "lua", "python" },
         callback = function(args)
           local started = pcall(vim.treesitter.start, args.buf)
 
