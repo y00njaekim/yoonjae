@@ -23,12 +23,12 @@ return {
           ["l"] = "open",
           ["h"] = "close_node",
           ["Y"] = function(state)
-            local path = state.tree:get_node():get_id()
+            local path = vim.fn.fnamemodify(state.tree:get_node():get_id(), ":.")
             vim.fn.setreg("+", path, "c")
             vim.notify("Copied: " .. path)
           end,
           ["gy"] = function(state)
-            local path = vim.fn.fnamemodify(state.tree:get_node():get_id(), ":.")
+            local path = state.tree:get_node():get_id()
             vim.fn.setreg("+", path, "c")
             vim.notify("Copied: " .. path)
           end,
