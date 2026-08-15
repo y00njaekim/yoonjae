@@ -1,6 +1,6 @@
 ---
-name: anki
-description: ANKI 노트를 생성·수정·파생한다. "anki 노트 만들어줘", "이 카드 고쳐줘", "이 카드 쉬운데 더 파줘", "전제 개념이 헷갈려" 같은 요청에 쓴다. anki MCP로 Anki에 직접 투입한다.
+name: anki-notes
+description: Anki 노트를 생성·수정·파생한다. "anki 노트 만들어줘", "이 카드 고쳐줘", "이 카드 쉬운데 더 파줘", "전제 개념이 헷갈려" 같은 요청에 쓴다. anki MCP로 Anki에 직접 투입한다.
 ---
 
 anki MCP(`add_notes`, `find_notes`, `notes_info`, `update_note_fields`, `gui_current_card`, `sync`)를 쓴다. 서버가 응답하지 않으면 Anki 실행을 요청하고 멈춘다.
