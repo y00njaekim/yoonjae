@@ -3,11 +3,11 @@ name: anki-notes
 description: Anki 노트를 생성·수정·파생한다. "anki 노트 만들어줘", "이 카드 고쳐줘", "이 카드 쉬운데 더 파줘", "전제 개념이 헷갈려" 같은 요청에 쓴다. anki MCP로 Anki에 직접 투입한다.
 ---
 
-anki MCP(`add_notes`, `find_notes`, `notes_info`, `update_note_fields`, `gui_current_card`, `sync`)를 쓴다. 서버가 응답하지 않으면 Anki 실행을 요청하고 멈춘다.
+anki MCP(`add_notes`, `find_notes`, `notes_info`, `update_note_fields`, `card_management`, `gui_current_card`, `sync`)를 쓴다. 서버가 응답하지 않으면 Anki 실행을 요청하고 멈춘다.
 
 시작할 때 `sync` 한 번, 쓰기가 끝나면 다시 `sync`.
 
-노트를 실제로 쓰는 단계(미리보기 작성 직전)에 [references/formatting.md](references/formatting.md)를 읽는다.
+노트를 실제로 쓰는 단계(투입 직전)에 [references/formatting.md](references/formatting.md)를 읽는다.
 
 ## 출제 전략
 
@@ -16,6 +16,7 @@ anki MCP(`add_notes`, `find_notes`, `notes_info`, `update_note_fields`, `gui_cur
 - 사실 나열보다 인과를 묻는다.
 - 자잘한 문제 여러 개가 아니라 최소 수의 종합적 문제.
 - 기본형은 Cloze — 논리 전개를 서술로 깔고, 핵심 고리(결정적 수치·용어·인과의 연결부)마다 빈칸을 판다.
+- 완결된 문장으로 풀어 쓴다 — 답을 채운 상태의 카드가 그것만 읽고도 이해되는 자기설명적 지문이 되게.
 - Basic은 뒷면이 몇 단어로 딱 떨어지는 명확한 문답일 때만.
 - 답이 맞고 틀리고가 분명해야 한다. 보기형(가/나/다)이면 뒷면에 각 오답의 이유를 부연.
 - 사용자의 배경지식 내 용어만 전제한다. 넘어야 하면 각주로 설명한다 (형식은 formatting.md).
@@ -29,13 +30,19 @@ anki MCP(`add_notes`, `find_notes`, `notes_info`, `update_note_fields`, `gui_cur
 
 합의 후에만 초안. 사용자가 "바로 만들어"라고 하면 스킵한다.
 
-## 미리보기 → 투입
+## 투입 → 승인
 
-한 카드씩 진행한다: 초안 → 점검 → 미리보기 → 승인 → 투입이 끝나야 다음 카드로 넘어간다.
+한 카드씩 진행한다: 초안 → 점검 → 투입(purple flag) → 승인(flag 해제)이 끝나야 다음 카드로 넘어간다.
+
+**purple flag = 아직 승인 안 된 draft.** 사용자가 승인하기 전에는 절대 떼지 않는다.
 
 1. **점검**: sonnet subagent에게 초안을 넘겨 잘 안 읽히는 문장, 구조적으로 이상한 부분, 문제로서 부적절한 점(앞면 문맥의 답 노출, 빈칸 선정, 답의 유일성)을 지적받는다. 타당한 지적만 반영한다.
-2. **미리보기**: tmp 디렉토리에 md 파일을 쓰고 `open`으로 연다. 면마다(Cloze는 Text/Back Extra) 서로 다른 코드블럭, 실제 필드 값 그대로 (`<br>`, HTML 포함). Agent 필드도 같이 — 승인 대상이다. 채팅에는 파일을 열었다는 안내와 점검에서 고친 점만 남긴다.
-3. **투입**: 승인받으면 `add_notes`. **덱은 Default, 태그 없음.** 투입 후 tmp 파일을 삭제하고 nid를 보고한다.
+2. **투입**: `add_notes`로 바로 Anki에 넣는다. **덱은 Default, 태그 없음.** 이어서 `notes_info`의 `cards`로 card id를 받아 `card_management`(`action: set_flag`, `flag: 7`)로 purple flag를 건다. 채팅에는 nid와 점검에서 고친 점만 남긴다 — md 미리보기 파일을 쓰거나 `open` 하지 않는다.
+3. **확인**: 사용자는 Anki 브라우저에서 `flag:7`로 draft를 본다.
+4. **승인**: 승인받으면 `flag: 0`으로 떼고 다음 카드로 넘어간다.
+5. **수정 요청**: `update_note_fields`로 고치고 purple flag를 다시 건다(이미 걸려 있으면 유지). 다시 승인받아야 뗀다.
+
+노트가 Anki 브라우저에 열려 있으면 `update_note_fields`가 반영되지 않는다. 수정 전에 브라우저를 닫거나 다른 노트로 옮겨 달라고 안내한다.
 
 ## Agent 필드
 
@@ -56,7 +63,7 @@ created: YYYY-MM-DD
 
 1. 대상 특정: 리뷰 중이면 `gui_current_card`, 아니면 사용자가 준 nid나 `find_notes`.
 2. `notes_info`로 현재 내용 확인.
-3. 변경안 미리보기 → 승인 → `update_note_fields`.
+3. `update_note_fields`로 고치고 purple flag를 건다 → 승인받으면 해제.
 4. 출제 의도가 바뀌었으면 Agent 필드도 같이 갱신.
 
 과거 노트의 빈 Agent 필드를 소급해서 채우지 않는다.
@@ -72,7 +79,7 @@ created: YYYY-MM-DD
 2. 원본의 Agent 필드를 읽는다. 비어 있으면 원본을 왜 만들었는지 사용자에게 한두 줄 묻는다 (원본에 백필하지는 않는다).
 3. `find_notes`로 `Agent:*<원본 nid>*`를 검색해 기존 파생 노트를 찾고, 이미 판 방향은 다시 제안하지 않는다.
 4. 새 노트의 Agent에 `link: <원본 nid>`를 넣고, 방향과 이유는 `purpose`에 서술.
-5. 이후는 게이트 → 미리보기 → 투입 동일. **원본 노트는 어떤 필드도 건드리지 않는다.**
+5. 이후는 게이트 → 투입 → 승인 동일. **원본 노트는 어떤 필드도 건드리지 않는다.**
 
 ## 링크 (Anki Note Linker)
 
