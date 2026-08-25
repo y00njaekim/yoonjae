@@ -1,2 +1,13 @@
 [manager]
 clipboard = "system"
+
+[[mgr.prepend_keymap]]
+on   = "s"
+run  = 'search --via=fd --args="-u"'
+desc = "Search by name (ignore/hidden 포함)"
+
+[[mgr.prepend_keymap]]
+on   = "S"
+run  = 'search --via=rg --args="-u"'
+desc = "Search by content (ignore/hidden 포함)"
+
