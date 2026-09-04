@@ -59,5 +59,9 @@ if [ "$dry" -eq 1 ]; then
   echo "dry-run: tmux $target 에 'cd $cwd && claude --resume ${sid:-<id>} --fork-session' 을 보낼 것"
   exit 0
 fi
-tmux send-keys -t "=$target" "cd $(printf %q "$cwd") && claude --resume $sid --fork-session" Enter
+# printf %q 는 비ASCII 바이트를 $'\\204...' 로 이스케이프하는데 zsh 가 그걸 다르게 읽어서
+# 한글이 든 경로가 깨진다. 작은따옴표는 바이트를 그대로 넘기므로 안전하다.
+q="'"
+cwd_q="$q${cwd//$q/$q\\$q$q}$q"   # 경로 안의 ' 는 '\'' 로 바꾼다
+tmux send-keys -t "=$target" "cd $cwd_q && claude --resume $sid --fork-session" Enter
 echo "fork 완료: 세션 $sid → tmux $target (cwd $cwd)"

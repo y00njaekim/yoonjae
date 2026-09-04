@@ -11,4 +11,4 @@ description: 현재 Claude 세션을 지정한 tmux pane 에 fork 해서 띄운�
    ```
    스크립트가 세션 ID(`CLAUDE_CODE_SESSION_ID`)와 cwd 를 알아서 채우고, 대상 pane 이 셸 프롬프트일 때만 `claude --resume <id> --fork-session` 을 보낸다.
 2. 대상 세션·윈도우·pane 이 없으면 스크립트가 만든다(세션은 detached 로, pane 은 split 으로). `.pane` 을 생략하면 0 이다. 스크립트가 만든 것은 "만듦:" 줄로 알려 준다.
-3. 완료 기준: 스크립트가 "fork 완료" 를 찍고, `tmux capture-pane -t <대상> -p` 에 claude 프롬프트가 보인다. 그 한 줄만 보고한다.
+3. 스크립트가 찍은 줄을 그대로 보고하고 끝낸다.
