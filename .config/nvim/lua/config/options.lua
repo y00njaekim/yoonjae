@@ -31,3 +31,14 @@ opt.clipboard = "unnamedplus"
 opt.cmdheight = 1
 opt.scrolloff = 10
 opt.mouse:append("a")
+
+-- Reload externally changed files when returning to the editor or a buffer.
+opt.autoread = true
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
+  group = vim.api.nvim_create_augroup("external_file_reload", { clear = true }),
+  callback = function()
+    if vim.fn.getcmdwintype() == "" then
+      vim.cmd("checktime")
+    end
+  end,
+})
