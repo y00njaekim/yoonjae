@@ -9,7 +9,7 @@ Claude Code의 TUI 출력은 이미 렌더링이 끝난 결과물이라 손댈 �
 대신 그 **위쪽에 있는 마크다운 원본**을 잡아서 따로 조판한다.
 
 ```
-Stop hook ─→ latest.md ─→ [헤드리스 크롬] ─→ PNG ─→ [kitten icat] ─→ tmux 패널
+Stop hook ─→ threads/provider/session_id/latest.md ─→ [헤드리스 크롬] ─→ PNG ─→ [kitten icat] ─→ tmux 패널
 ```
 
 - 원본은 Claude Code가 남기는 세션 트랜스크립트(JSONL)에서 온다
@@ -23,7 +23,7 @@ Stop hook ─→ latest.md ─→ [헤드리스 크롬] ─→ PNG ─→ [kitte
 | `~/.claude/mdview.conf`          | 설정 전부 (폰트 · 폭 · 테마)                |
 | `~/.claude/bin/md2png.py`        | conf 읽고 마크다운 → PNG 조판               |
 | `~/.claude/bin/mdview.sh`        | 렌더 호출 → 이미지 표시 → tmux 갱신         |
-| `~/.claude/hooks/render-last.sh` | Stop hook. 마지막 답변을 `latest.md`로 저장 |
+| `~/.claude/hooks/render-last.sh` | 대화 생명주기 hook. ID별 답변 저장 및 pane 연결 |
 
 ---
 
@@ -60,67 +60,50 @@ mkdir -p ~/.claude/bin ~/.claude/hooks
 chmod +x ~/.claude/bin/mdview.sh
 ```
 
-## 5. Stop hook
+## 5. 대화별 hook 등록 (Claude + Codex)
 
-`~/.claude/hooks/render-last.sh`:
+`bin/mdview-state.py`, `bin/mdview.sh`, `bin/md2png.py`를 `~/.claude/bin/`에,
+`hooks/render-last.sh`를 `~/.claude/hooks/`에 배치한다.
+Python 3은 상태 저장용이고, 기존 venv는 이미지 렌더링용이다.
 
-```bash
-#!/usr/bin/env bash
-set -uo pipefail
-out=~/.claude/last-message; mkdir -p "$out"
-in=$(cat)
+이 저장소의 `.claude/settings.json`에 있는 `hooks` 항목을 사용자
+`~/.claude/settings.json`에 병합한다. 기존 설정이나 다른 hook을 덮어쓰지 않는다.
+Codex 실행 파일·설정·venv는 `.codex` 아래에서 독립적으로 관리한다.
+[Codex 설치 안내](../.codex/mdview-setup.md)를 따른다.
+Codex는 `.codex/hooks.json`을 `~/.codex/hooks.json`에 배치한다.
+이미 hooks.json이 있으면 각 이벤트의 배열에 병합한다.
+두 앱 모두 SessionStart / UserPromptSubmit / Stop / SessionEnd를 등록한다.
+Codex에서 hook 검토가 표시되면 `/hooks`에서 정의를 확인하고 신뢰해야 실행된다.
+설정을 적용한 다음 CLI를 다시 시작한다.
 
-msg=$(jq -r '.last_assistant_message
-  | if type=="string" then .
-    elif type=="array" then ([.[]|select(.type=="text")|.text]|join("\n\n"))
-    else "" end' <<<"$in")
+공식 Codex hook 규격: https://learn.chatgpt.com/docs/hooks
 
-if [ -z "$msg" ]; then
-  t=$(jq -r '.transcript_path' <<<"$in")
-  msg=$(tac "$t" | jq -r 'select(.type=="assistant")
-    | [.message.content[]?|select(.type=="text")|.text] | join("\n\n")' \
-    2>/dev/null | grep -m1 -v '^$' || true)
-fi
-
-printf '%s\n' "$msg" > "$out/latest.md"
-exit 0
-```
-
-```bash
-chmod +x ~/.claude/hooks/render-last.sh
-brew install jq
-```
-
-`~/.claude/settings.json`에 등록:
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          { "type": "command", "command": "~/.claude/hooks/render-last.sh" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-경로를 추측하지 않는 게 핵심이다. hook이 `transcript_path`를 직접 넘겨주므로
-Claude Code 버전이 바뀌어도 안 깨진다.
+- 답변 저장: `~/.claude/last-message/threads/{session_id}/latest.md` (Claude),
+  `~/.codex/last-message/threads/{session_id}/latest.md` (Codex)
+- 현재 대화 연결: tmux pane option `@mdview-thread`
+- 시작/프롬프트 시 pane 연결 갱신, 종료 시 해당 연결 해제
+- Stop은 그 대화의 답변만 갱신. 이전 대화의 늦은 Stop은 새 연결을 덮어쓰지 않음
+- Claude는 답변 필드가 없으면 전달받은 transcript에서 마지막 텍스트를 읽음
+- Codex는 Stop의 `last_assistant_message`를 사용
+- 답변이 없거나 연결되지 않은 pane은 안내 메시지를 표시
+- 전체 세션 공용 `latest.md`로 폴백하지 않음
 
 ## 6. tmux 키 바인딩
 
-```
-bind-key g split-window -h "~/.claude/bin/mdview.sh; read -r _"
-```
-
-```bash
-tmux source-file ~/.tmux.conf
+```tmux
+bind-key g run-shell 'case "#{@mdview-thread}" in codex/*) app=codex ;; *) app=claude ;; esac; tmux split-window -h -t "#{pane_id}" "bash ~/.$app/bin/mdview.sh --pane #{pane_id}; read -r _"'
 ```
 
-`prefix + g` → 오른쪽 패널에 조판된 마지막 답변. 엔터로 닫기.
+`~/.tmux.conf`에 위 설정을 반영하고 `tmux source-file ~/.tmux.conf`로 재로딩한다.
+`Ctrl+A` 다음 `g`를 누르면 **누른 원래 pane의 대화**에서 마지막 답변을 오른쪽에 표시한다.
+각 뷰어는 별도의 임시 Markdown/PNG를 사용하므로 동시에 열어도 충돌하지 않는다.
+엔터로 닫는다. 렌더링 실패 시에도 패널에 오류가 남는다.
+
+명시적인 파일은 `bash ~/.claude/bin/mdview.sh /path/to/answer.md`로 볼 수 있다.
+
+이 기능은 tmux 안의 Claude Code / Codex CLI용이다. 데스크톱 채팅에는
+`TMUX_PANE`이 없어 단축키를 연결할 수 없다. hook이 실행되면 ID별 저장은 가능하다.
+동일 pane에서 새 대화로 바꾼 경우 SessionStart 또는 UserPromptSubmit 이후 연결된다.
 
 ---
 
@@ -166,7 +149,7 @@ conf 파서가 `.strip("'\"")`로 따옴표를 벗기면 바깥 작은따옴표�
 마크다운 변환이 `$x_1$`의 `_`를 강조 문법으로 먹는다.
 `md2png.py`는 수식을 미리 빼돌렸다가 변환 후 되돌린다.
 
-## 아직 안 푼 것
+## 검증
 
-- **패널별 분리** — Claude Code를 여러 개 띄우면 `latest.md`를 공유해서 섞인다.
-  hook에서 `$TMUX_PANE`으로 파일명을 키잉하면 해결
+`python3 -m unittest discover -s tests -p "test_mdview*.py"`
+대화/프로바이더 분리, pane 전환, 늦게 끝난 이전 대화, 여러 줄 transcript 복구를 검사한다.

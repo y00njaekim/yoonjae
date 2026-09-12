@@ -16,7 +16,7 @@ fi
 work=$(mktemp -d "${TMPDIR:-/tmp}/mdview.XXXXXXXX")
 trap 'rm -rf -- "$work"' EXIT
 cp -- "$src" "$work/answer.md"
-"${MDVIEW_PYTHON:-$HOME/.claude/venv/bin/python}" "$base/md2png.py" "$work/answer.md" "$work/answer.png"
+"${MDVIEW_PYTHON:-$HOME/.codex/venv/bin/python}" "$base/md2png.py" "$work/answer.md" "$work/answer.png"
 clear
 kitten icat --align left --transfer-mode=stream "$work/answer.png"
 if [[ -n "${TMUX:-}" ]]; then tmux refresh-client; fi

@@ -1,0 +1,22 @@
+# macOS metadata (at any depth)
+.DS_Store
+._*
+
+# Python environments and generated test/cache files
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local renderer environments and saved conversation output
+/.claude/venv/
+/.codex/venv/
+/.claude/last-message/
+/.codex/last-message/
+
+# Keep tests/ and shared Claude/Codex configuration in version control.
