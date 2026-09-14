@@ -104,6 +104,13 @@ return {
 		},
 		keys = {
 			{
+				"<leader>ga",
+				function()
+					require("config.araxis").open()
+				end,
+				desc = "Open current Diffview comparison in Araxis",
+			},
+			{
 				"<leader>gv",
 				"<cmd>DiffviewOpen HEAD<cr>",
 				desc = "Review all local Git changes",
