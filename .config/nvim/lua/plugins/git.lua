@@ -112,7 +112,7 @@ return {
 			},
 			{
 				"<leader>gv",
-				"<cmd>DiffviewOpen HEAD<cr>",
+				"<cmd>DiffviewOpen -uall<cr>",
 				desc = "Review all local Git changes",
 			},
 			{
