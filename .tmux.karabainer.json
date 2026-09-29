@@ -1,0 +1,41 @@
+{
+  "description": "Ghostty: Ctrl+A switches Gureum to English and sends prefix",
+  "manipulators": [
+    {
+      "type": "basic",
+      "from": {
+        "key_code": "a",
+        "modifiers": {
+          "mandatory": ["control"],
+          "optional": ["caps_lock"]
+        }
+      },
+      "to": [
+        {
+          "key_code": "e",
+          "modifiers": ["right_option", "left_shift"],
+          "hold_down_milliseconds": 200
+        },
+        {
+          "key_code": "a",
+          "modifiers": ["left_control"]
+        }
+      ],
+      "conditions": [
+        {
+          "type": "frontmost_application_if",
+          "bundle_identifiers": ["^com\\.mitchellh\\.ghostty$"]
+        },
+        {
+          "type": "input_source_if",
+          "input_sources": [
+            {
+              "input_source_id": "^org\\.youknowone\\.inputmethod\\.Gureum\\.",
+              "language": "^ko$"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
