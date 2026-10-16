@@ -21,6 +21,7 @@ return {
         local builtin = require("telescope.builtin")
         mapKey('<leader>ff', builtin.find_files)
         mapKey('<leader>fg', telescope.extensions.live_grep_args.live_grep_args)
+        mapKey('<leader>fr', builtin.resume)
         mapKey('<leader>fb', builtin.buffers)
         mapKey('<leader>fh', builtin.help_tags) 
         mapKey('grr', builtin.lsp_references)
